@@ -9,7 +9,7 @@ app.use(express.json())
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.afhro9w.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -39,12 +39,12 @@ async function run() {
             const data=req.body
             console.log(data)
             const result=await servicesCollection.insertOne(data)
-            res.send(result)
+            res.send(result.ops[0])
         })
 
-        app.get('/services',async(req,res)=>{
+        app.get('/service',async(req,res)=>{
             const search = req.query.search;
-            console.log(search)
+           
 
             let query = {
                 serviceName: { $regex: search, $options: 'i' }
@@ -56,6 +56,20 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/services',async(req,res)=>{
+            const result=await servicesCollection.find().toArray()
+            res.send(result)
+        })
+
+
+
+
+        app.get('/services/:id',async(req,res)=>{
+            const id=req.params.id;
+            const query={_id: new ObjectId (id)}
+            const result= await servicesCollection.findOne(query)
+            res.send(result)
+        })
 
 
 
@@ -70,7 +84,8 @@ async function run() {
 
 
 
-        await client.db("admin").command({ ping: 1 });
+
+        // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
