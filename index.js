@@ -34,6 +34,48 @@ async function run() {
         const servicesCollection = database.collection("servicesCollection");
         const bookingCOllection = database.collection("bookingCOllection");
 
+        
+
+
+
+
+
+
+
+
+        app.post('/bookings',async(req,res)=>{
+            const data=req.body;
+            const result=await bookingCOllection.insertOne(data)
+            res.send(result);
+        })
+        
+        app.get('/bookings/:email',async(req,res)=>{
+            const email=req.params.email;
+            const query = { customerEmail : email}
+            const result=await bookingCOllection.find(query).toArray()
+            res.send(result)
+        })
+        app.get('/bookingRequest/:email',async(req,res)=>{
+            const email=req.params.email;
+            const query = { providerEmail : email}
+            const result=await bookingCOllection.find(query).toArray()
+            res.send(result)
+        })
+        app.patch('/update/:id',async(req,res)=>{
+            const status=req.body;
+            const id=req.params.id;
+            const filter={_id : new ObjectId(id)}
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    ...status,
+                },
+            };
+
+            const result=await bookingCOllection.updateOne(filter,updateDoc,options)
+            res.send(result)
+            
+        })
 
 
         app.post('/services',async(req,res)=>{
