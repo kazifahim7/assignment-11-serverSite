@@ -8,7 +8,9 @@ const cookieParser = require('cookie-parser')
 
 app.use(cors({
     origin:[
-        'http://localhost:5173'
+        'http://localhost:5173',
+        'https://assignment11-34744.web.app',
+        'https://assignment11-34744.firebaseapp.com'
     ],
     credentials: true
 }))
