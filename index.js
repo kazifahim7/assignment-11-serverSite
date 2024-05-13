@@ -1,7 +1,7 @@
 const express = require('express')
 const cors = require('cors');
 const app = express()
-const port =process.env.PORT || 5000
+const port =process.env.PORT || 7000
 require('dotenv').config()
 
 app.use(cors())
@@ -32,6 +32,7 @@ async function run() {
 
         const database = client.db("assignmentDB");
         const servicesCollection = database.collection("servicesCollection");
+        const bookingCOllection = database.collection("bookingCOllection");
 
 
 
@@ -39,7 +40,7 @@ async function run() {
             const data=req.body
             console.log(data)
             const result=await servicesCollection.insertOne(data)
-            res.send(result.ops[0])
+            res.send(result)
         })
 
         app.get('/service',async(req,res)=>{
@@ -61,19 +62,57 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/services/:email',async(req,res)=>{
+            const email=req.params.email;
+            const query = { providerEmail : email}
 
-
-
-        app.get('/services/:id',async(req,res)=>{
-            const id=req.params.id;
-            const query={_id: new ObjectId (id)}
-            const result= await servicesCollection.findOne(query)
+            const result= await servicesCollection.find(query).toArray()
             res.send(result)
         })
 
 
 
 
+       app.get('/single/:id',async(req,res)=>{
+        const id=req.params.id;
+        const query={_id: new ObjectId(id)}
+        const result=await servicesCollection.findOne(query);
+        res.send(result)
+
+       })
+
+       app.put('/single/:id',async(req,res)=>{
+        const id =req.params.id;
+        const data=req.body
+           const filter ={_id : new ObjectId(id)}
+            const options = { upsert: true };
+           const updateDoc = {
+               $set: {
+                   serviceName: data.serviceName,
+                   providerEmail: data.providerEmail,
+                   price: data.price,
+                   providerName: data.providerName,
+                   servicePhoto: data.servicePhoto,
+                   area: data.area,
+                   providerImage: data.providerImage,
+                   description : data.description
+               },
+            }
+
+           const result = await servicesCollection.updateOne(filter, updateDoc, options);
+           res.send(result)
+
+
+       })
+
+       app.delete('/single/:id',async(req,res)=>{
+        const id=req.params.id;
+        const query={_id : new ObjectId(id)}
+
+        const result=await servicesCollection.deleteOne(query)
+        res.send(result);
+
+       })
 
 
 
@@ -85,7 +124,10 @@ async function run() {
 
 
 
-        // await client.db("admin").command({ ping: 1 });
+
+
+
+        await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
